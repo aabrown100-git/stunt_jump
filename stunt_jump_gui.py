@@ -183,9 +183,8 @@ class StuntJumpGUI(QMainWindow):
                 self.status_label.setText("Simulation complete! Car did not reach the end of the track.")
         
         # Plot the current ramp shape and control points
-        self.ax.plot(xs_ft, ys_ft, 'b-', label='Ramp', zorder=2)
+        self.ax.plot(xs_ft, ys_ft, color='orange', linewidth=2, label='Ramp', zorder=2)
         self.ax.plot(self.anchor_locations[:, 0]/12, self.anchor_locations[:, 1]/12, 'ro', label='Control Points', zorder=3)
-        self.ax.legend()
         
         self.canvas.draw()
         
@@ -226,7 +225,7 @@ class StuntJumpGUI(QMainWindow):
             xs_ft, ys_ft = self.get_ramp_coordinates()
             
             # Plot new ramp and control points
-            self.ax.plot(xs_ft, ys_ft, 'b-', label='Ramp', zorder=2)
+            self.ax.plot(xs_ft, ys_ft, color='orange', linewidth=2, label='Ramp', zorder=2)
             self.ax.plot(self.anchor_locations[:, 0]/12, self.anchor_locations[:, 1]/12, 'ro', label='Control Points', zorder=3)
             
             self.canvas.draw()
