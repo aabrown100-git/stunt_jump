@@ -76,8 +76,15 @@ class StuntJumpGUI(QMainWindow):
         self.status_label = QLabel("Ready")
         layout.addWidget(self.status_label)
         
-        # Initialize plot
+        # Create single axis
         self.ax = self.figure.add_subplot(111)
+        self.ax.set_xlim(0, 10)
+        self.ax.set_ylim(0, 5)
+        self.ax.set_xlabel('x [feet]')
+        self.ax.set_ylabel('y [feet]')
+        self.ax.grid(True)
+        
+        # Initialize plot
         self.plot_initial_ramp(run_simulation=True)
         
         # Connect mouse events
@@ -90,6 +97,14 @@ class StuntJumpGUI(QMainWindow):
         
     def plot_last_simulation(self):
         if self.last_simulation_results is not None:
+            # Clear the axis
+            self.ax.clear()
+            self.ax.set_xlim(0, 10)
+            self.ax.set_ylim(0, 5)
+            self.ax.set_xlabel('x [feet]')
+            self.ax.set_ylabel('y [feet]')
+            self.ax.grid(True)
+            
             # Plot the last simulation results
             plot_params = {
                 'xnodes': self.last_simulation_results['anchor_locations'][:, 0] * convert_in_to_m,
@@ -101,9 +116,9 @@ class StuntJumpGUI(QMainWindow):
                 'ps': self.last_simulation_results['path_maps']['ps'],
                 'p2k': self.last_simulation_results['path_maps']['p2k'],
                 'n_long_track_segments': self.last_simulation_results['path_maps']['n_long_track_segments'],
-                'ring_1': self.ring_1,  # Keep in feet for plotting
-                'ring_2': self.ring_2,  # Keep in feet for plotting
-                'ring_3': self.ring_3,  # Keep in feet for plotting
+                'ring_1': self.ring_1,
+                'ring_2': self.ring_2,
+                'ring_3': self.ring_3,
                 'end_track_flag': self.last_simulation_results['ramp_result']['end_track_flag'],
                 'x_end': self.last_simulation_results['ramp_result']['x_end'],
                 'y_end': self.last_simulation_results['ramp_result']['y_end'],
@@ -117,6 +132,7 @@ class StuntJumpGUI(QMainWindow):
             
     def plot_initial_ramp(self, run_simulation=True, clear_plot=True):
         if clear_plot:
+            # Clear the axis
             self.ax.clear()
             self.ax.set_xlim(0, 10)
             self.ax.set_ylim(0, 5)
@@ -154,33 +170,9 @@ class StuntJumpGUI(QMainWindow):
                 'anchor_locations': self.anchor_locations.copy()
             }
             
-            # Create plot parameters dictionary
-            plot_params = {
-                'xnodes': self.anchor_locations[:, 0] * convert_in_to_m,
-                'ynodes': self.anchor_locations[:, 1] * convert_in_to_m,
-                'xs': results['path_maps']['xs'],
-                'ys': results['path_maps']['ys'],
-                'x_full': results['ballistic_result']['x_full'],
-                'y_full': results['ballistic_result']['y_full'],
-                'ps': results['path_maps']['ps'],
-                'p2k': results['path_maps']['p2k'],
-                'n_long_track_segments': results['path_maps']['n_long_track_segments'],
-                'ring_1': self.ring_1,
-                'ring_2': self.ring_2,
-                'ring_3': self.ring_3,
-                'end_track_flag': results['ramp_result']['end_track_flag'],
-                'x_end': results['ramp_result']['x_end'],
-                'y_end': results['ramp_result']['y_end'],
-                'ramp_type': self.ramp_type,
-                'at_rest_flag': results['ramp_result']['at_rest_flag'],
-                't_to_rest': results['ramp_result']['t_to_rest'],
-                't_full': results['ballistic_result']['t_full'],
-                'animation_flag': False
-            }
+            # Clear and update the plot
+            self.plot_last_simulation()
             
-            # Use plot_and_animate_car_motion for visualization
-            plot_and_animate_car_motion(plot_params, ax=self.ax)
-                
             # Update status
             if results['ramp_result']['end_track_flag']:
                 x_landing = results['ballistic_result']['x_full'][-1] / convert_in_to_m / 12
@@ -189,11 +181,11 @@ class StuntJumpGUI(QMainWindow):
                 self.status_label.setText(f"Simulation complete! Car traveled {distance:.2f} inches from the end of the track.")
             else:
                 self.status_label.setText("Simulation complete! Car did not reach the end of the track.")
-        else:
-            # Just plot the current ramp shape
-            self.ax.plot(xs_ft, ys_ft, 'b-', label='Ramp')
-            self.ax.plot(self.anchor_locations[:, 0]/12, self.anchor_locations[:, 1]/12, 'ro', label='Control Points')
-            self.ax.legend()
+        
+        # Plot the current ramp shape and control points
+        self.ax.plot(xs_ft, ys_ft, 'b-', label='Ramp', zorder=2)
+        self.ax.plot(self.anchor_locations[:, 0]/12, self.anchor_locations[:, 1]/12, 'ro', label='Control Points', zorder=3)
+        self.ax.legend()
         
         self.canvas.draw()
         
@@ -225,8 +217,19 @@ class StuntJumpGUI(QMainWindow):
                 event.ydata * 12
             ]
             
-            # Update the plot with new ramp shape
-            self.plot_initial_ramp(run_simulation=False, clear_plot=True)  # Clear plot to show only last simulation
+            # Clear only the control points and ramp
+            for artist in self.ax.lines:
+                if artist.get_label() in ['Control Points', 'Ramp']:
+                    artist.remove()
+            
+            # Get new ramp coordinates
+            xs_ft, ys_ft = self.get_ramp_coordinates()
+            
+            # Plot new ramp and control points
+            self.ax.plot(xs_ft, ys_ft, 'b-', label='Ramp', zorder=2)
+            self.ax.plot(self.anchor_locations[:, 0]/12, self.anchor_locations[:, 1]/12, 'ro', label='Control Points', zorder=3)
+            
+            self.canvas.draw()
             
     def add_point(self):
         if len(self.anchor_locations) >= 2:
