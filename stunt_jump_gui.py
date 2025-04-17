@@ -49,40 +49,52 @@ class StuntJumpGUI(QMainWindow):
         control_panel = QWidget()
         control_layout = QHBoxLayout(control_panel)
         
+        # Create vertical layout for point controls
+        point_controls = QVBoxLayout()
+        
         # Add control buttons
         self.add_point_button = QPushButton("Add Point")
         self.add_point_button.clicked.connect(self.add_point)
-        control_layout.addWidget(self.add_point_button)
+        point_controls.addWidget(self.add_point_button)
         
         self.remove_point_button = QPushButton("Remove Point")
         self.remove_point_button.clicked.connect(self.remove_point)
-        control_layout.addWidget(self.remove_point_button)
+        point_controls.addWidget(self.remove_point_button)
+        
+        # Add ramp visibility toggle
+        self.toggle_ramp_button = QPushButton("Hide Ramp")
+        self.toggle_ramp_button.setCheckable(True)
+        self.toggle_ramp_button.clicked.connect(self.toggle_ramp)
+        point_controls.addWidget(self.toggle_ramp_button)
+        
+        # Add point controls to main layout
+        control_layout.addLayout(point_controls)
+        
+        # Create vertical layout for simulation controls
+        sim_controls = QVBoxLayout()
         
         self.simulate_button = QPushButton("Simulate")
         self.simulate_button.clicked.connect(self.simulate)
-        control_layout.addWidget(self.simulate_button)
+        sim_controls.addWidget(self.simulate_button)
         
         # Add animation checkbox
         self.animation_checkbox = QCheckBox("Save Animation")
         self.animation_checkbox.stateChanged.connect(self.toggle_animation)
-        control_layout.addWidget(self.animation_checkbox)
+        sim_controls.addWidget(self.animation_checkbox)
         
         self.reset_button = QPushButton("Reset")
         self.reset_button.clicked.connect(self.reset)
-        control_layout.addWidget(self.reset_button)
-
+        sim_controls.addWidget(self.reset_button)
+        
+        # Add simulation controls to main layout
+        control_layout.addLayout(sim_controls)
+        
         # Add friction factor control
         friction_layout = QHBoxLayout()
         friction_layout.addWidget(QLabel("Friction Factor:"))
         self.friction_input = QLineEdit(str(self.friction_factor))
         friction_layout.addWidget(self.friction_input)
         control_layout.addLayout(friction_layout)
-
-        # Add ramp visibility toggle
-        self.toggle_ramp_button = QPushButton("Hide Ramp")
-        self.toggle_ramp_button.setCheckable(True)
-        self.toggle_ramp_button.clicked.connect(self.toggle_ramp)
-        control_layout.addWidget(self.toggle_ramp_button)
 
         # Add ring controls
         ring_control_panel = QWidget()
