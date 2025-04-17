@@ -153,15 +153,13 @@ hit_target.terminal = True
 # We must be moving downards (don't stop before we begin moving upwards!)
 hit_target.direction = -1
 
-def compute_path_length_and_maps(xs, ys, long_track_segment_in, convert_in_to_m):
+def compute_path_length_and_maps(xs, ys):
     """
     Computes the path length and creates maps for a track defined by spline points.
 
     Parameters:
         xs (np.ndarray): x-coordinates of the spline points (in meters).
         ys (np.ndarray): y-coordinates of the spline points (in meters).
-        long_track_segment_in (float): Length of a long track segment (in inches).
-        convert_in_to_m (float): Conversion factor from inches to meters.
 
     Returns:
         dict: A dictionary containing:
@@ -312,21 +310,22 @@ def integrate_ramp_ode(ramp_params, ramp_ode_fun, end_track, at_rest):
         "theta_end": theta_end,
     }
 
-def integrate_ballistic_ode(end_track_flag, x_end, y_end, speed_end, theta_end, x_track, y_track, t_track, ballistic_ode_fun, hit_target):
+def integrate_ballistic_ode(params):
     """
     Integrates the ballistic ODE for the car's motion in the air after leaving the ramp.
 
     Parameters:
-        end_track_flag (bool): Whether the car reached the end of the track.
-        x_end (float): x-coordinate at the end of the ramp.
-        y_end (float): y-coordinate at the end of the ramp.
-        speed_end (float): Speed of the car at the end of the ramp.
-        theta_end (float): Launch angle of the car at the end of the ramp.
-        x_track (np.ndarray): x-coordinates of the car on the track.
-        y_track (np.ndarray): y-coordinates of the car on the track.
-        t_track (np.ndarray): Time points corresponding to the track motion.
-        ballistic_ode_fun (callable): Function defining the ballistic ODE.
-        hit_target (callable): Event function for detecting when the car hits a target.
+        params (dict): Dictionary containing:
+            - end_track_flag (bool): Whether the car reached the end of the track.
+            - x_end (float): x-coordinate at the end of the ramp.
+            - y_end (float): y-coordinate at the end of the ramp.
+            - speed_end (float): Speed of the car at the end of the ramp.
+            - theta_end (float): Launch angle of the car at the end of the ramp.
+            - x_track (np.ndarray): x-coordinates of the car on the track.
+            - y_track (np.ndarray): y-coordinates of the car on the track.
+            - t_track (np.ndarray): Time points corresponding to the track motion.
+            - ballistic_ode_fun (callable): Function defining the ballistic ODE.
+            - hit_target (callable): Event function for detecting when the car hits a target.
 
     Returns:
         dict: A dictionary containing:
@@ -334,6 +333,18 @@ def integrate_ballistic_ode(end_track_flag, x_end, y_end, speed_end, theta_end, 
             - y_full (np.ndarray): Full y-coordinates of the car (track + air).
             - t_full (np.ndarray): Full time points of the car's motion.
     """
+    # Unpack parameters
+    end_track_flag = params['end_track_flag']
+    x_end = params['x_end']
+    y_end = params['y_end']
+    speed_end = params['speed_end']
+    theta_end = params['theta_end']
+    x_track = params['x_track']
+    y_track = params['y_track']
+    t_track = params['t_track']
+    ballistic_ode_fun = params['ballistic_ode_fun']
+    hit_target = params['hit_target']
+
     if end_track_flag:
         # Initial speed and launch angle
         speed0 = speed_end
@@ -378,35 +389,52 @@ def integrate_ballistic_ode(end_track_flag, x_end, y_end, speed_end, theta_end, 
         "t_full": t_full,
     }
 
-def plot_and_animate_car_motion(
-    xnodes, ynodes, xs, ys, x_full, y_full, ps, p2k, n_long_track_segments,
-    long_track_segment_in, convert_in_to_m, ring_1, ring_2, ring_3, end_track_flag,
-    x_end, y_end, ramp_type, at_rest_flag, t_to_rest, t_full, animation_flag
-):
+def plot_and_animate_car_motion(params):
     """
     Plots the motion of the car on the track and in the air, and optionally creates an animation.
 
     Parameters:
-        xnodes, ynodes (np.ndarray): Spline nodes (in meters).
-        xs, ys (np.ndarray): Track coordinates (in meters).
-        x_full, y_full (np.ndarray): Full trajectory coordinates (in meters).
-        ps (np.ndarray): Path length array.
-        p2k (callable): Function mapping path length to slope (dy/dx).
-        n_long_track_segments (int): Number of long track segments.
-        long_track_segment_in (float): Length of a long track segment (in inches).
-        convert_in_to_m (float): Conversion factor from inches to meters.
-        ring_1, ring_2, ring_3 (list): Ring locations (in feet).
-        end_track_flag (bool): Whether the car reached the end of the track.
-        x_end, y_end (float): Coordinates at the end of the ramp (in meters).
-        ramp_type (str): Type of ramp ('halfpipe' or 'jump').
-        at_rest_flag (bool): Whether the car came to rest.
-        t_to_rest (float): Time taken for the car to come to rest.
-        t_full (np.ndarray): Full time points of the car's motion.
-        animation_flag (bool): Whether to create an animation.
+        params (dict): Dictionary containing:
+            - xnodes, ynodes (np.ndarray): Spline nodes (in meters).
+            - xs, ys (np.ndarray): Track coordinates (in meters).
+            - x_full, y_full (np.ndarray): Full trajectory coordinates (in meters).
+            - ps (np.ndarray): Path length array.
+            - p2k (callable): Function mapping path length to slope (dy/dx).
+            - n_long_track_segments (int): Number of long track segments.
+            - ring_1, ring_2, ring_3 (list): Ring locations (in feet).
+            - end_track_flag (bool): Whether the car reached the end of the track.
+            - x_end, y_end (float): Coordinates at the end of the ramp (in meters).
+            - ramp_type (str): Type of ramp ('halfpipe' or 'jump').
+            - at_rest_flag (bool): Whether the car came to rest.
+            - t_to_rest (float): Time taken for the car to come to rest.
+            - t_full (np.ndarray): Full time points of the car's motion.
+            - animation_flag (bool): Whether to create an animation.
 
     Returns:
         None
     """
+    # Unpack parameters
+    xnodes = params['xnodes']
+    ynodes = params['ynodes']
+    xs = params['xs']
+    ys = params['ys']
+    x_full = params['x_full']
+    y_full = params['y_full']
+    ps = params['ps']
+    p2k = params['p2k']
+    n_long_track_segments = params['n_long_track_segments']
+    ring_1 = params['ring_1']
+    ring_2 = params['ring_2']
+    ring_3 = params['ring_3']
+    end_track_flag = params['end_track_flag']
+    x_end = params['x_end']
+    y_end = params['y_end']
+    ramp_type = params['ramp_type']
+    at_rest_flag = params['at_rest_flag']
+    t_to_rest = params['t_to_rest']
+    t_full = params['t_full']
+    animation_flag = params['animation_flag']
+
     # Convert units to feet for plotting
     xnodes_ft = xnodes / convert_in_to_m / 12
     ynodes_ft = ynodes / convert_in_to_m / 12
@@ -513,3 +541,120 @@ def plot_and_animate_car_motion(
         )
 
         ani.save('stunt_jump.mp4', writer='ffmpeg', fps=fps)
+
+def simulate_stunt_jump(params):
+    """
+    Performs a complete simulation of the stunt jump, including:
+    1. Computing path length and maps
+    2. Integrating the ramp ODE
+    3. Integrating the ballistic ODE (if applicable)
+    4. Plotting and animating the car motion
+
+    Parameters:
+        params (dict): Dictionary containing:
+            - friction_factor (float): Friction factor for the ramp
+            - p_initial (float): Initial position on the ramp (in meters)
+            - ramp_type (str): Type of ramp ('halfpipe' or 'jump')
+            - animation_flag (bool): Whether to create an animation
+            - anchor_locations (np.ndarray): Array of [x,y] coordinates for ramp anchors (in feet)
+            - ring_1, ring_2, ring_3 (list): Ring locations (in feet)
+
+    Returns:
+        dict: A dictionary containing all simulation results
+    """
+    # Unpack parameters
+    friction_factor = params['friction_factor']
+    p_initial = params['p_initial']
+    ramp_type = params['ramp_type']
+    animation_flag = params['animation_flag']
+    anchor_locations = params['anchor_locations']
+    ring_1 = params['ring_1']
+    ring_2 = params['ring_2']
+    ring_3 = params['ring_3']
+
+    # Extract positions of spline nodes
+    xnodes = np.array(anchor_locations[:,0])
+    ynodes = np.array(anchor_locations[:,1])
+
+    # Create a cubic spline between anchor locations
+    cs = CubicSpline(xnodes, ynodes, bc_type = 'not-a-knot')
+    xs = np.linspace(np.min(xnodes), np.max(xnodes), 1000)
+    ys = cs(xs)
+
+    # Convert to meters
+    xnodes = xnodes * convert_in_to_m # m
+    ynodes = ynodes * convert_in_to_m # m
+    xs = xs * convert_in_to_m # m
+    ys = ys * convert_in_to_m # m
+
+    # Compute path length and maps
+    path_maps = compute_path_length_and_maps(xs, ys)
+
+    # Define ramp parameters
+    ramp_params = {
+        'friction_factor': friction_factor,
+        'p_initial': p_initial,
+        'ps': path_maps["ps"],
+        'p2x': path_maps["p2x"],
+        'p2y': path_maps["p2y"],
+        'p2k': path_maps["p2k"],
+        'p2kappa': path_maps["p2kappa"],
+    }
+
+    # Integrate ramp ODE
+    ramp_result = integrate_ramp_ode(
+        ramp_params=ramp_params,
+        ramp_ode_fun=ramp_ode_fun,
+        end_track=end_track,
+        at_rest=at_rest,
+    )
+
+    # Integrate ballistic ODE
+    ballistic_params = {
+        'end_track_flag': ramp_result["end_track_flag"],
+        'x_end': ramp_result["x_end"],
+        'y_end': ramp_result["y_end"],
+        'speed_end': ramp_result["speed_end"],
+        'theta_end': ramp_result["theta_end"],
+        'x_track': ramp_result["x_track"],
+        'y_track': ramp_result["y_track"],
+        't_track': ramp_result["t_track"],
+        'ballistic_ode_fun': ballistic_ode_fun,
+        'hit_target': hit_target,
+    }
+
+    ballistic_result = integrate_ballistic_ode(ballistic_params)
+
+    # Plot and animate results
+    plot_params = {
+        'xnodes': xnodes,
+        'ynodes': ynodes,
+        'xs': xs,
+        'ys': ys,
+        'x_full': ballistic_result["x_full"],
+        'y_full': ballistic_result["y_full"],
+        'ps': path_maps["ps"],
+        'p2k': path_maps["p2k"],
+        'n_long_track_segments': path_maps["n_long_track_segments"],
+        'ring_1': ring_1,
+        'ring_2': ring_2,
+        'ring_3': ring_3,
+        'end_track_flag': ramp_result["end_track_flag"],
+        'x_end': ramp_result["x_end"],
+        'y_end': ramp_result["y_end"],
+        'ramp_type': ramp_type,
+        'at_rest_flag': ramp_result["at_rest_flag"],
+        't_to_rest': ramp_result["t_to_rest"],
+        't_full': ballistic_result["t_full"],
+        'animation_flag': animation_flag
+    }
+
+    plot_and_animate_car_motion(plot_params)
+
+    # Return all results
+    return {
+        'path_maps': path_maps,
+        'ramp_result': ramp_result,
+        'ballistic_result': ballistic_result,
+        'plot_params': plot_params
+    }
