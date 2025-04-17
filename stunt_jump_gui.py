@@ -488,10 +488,25 @@ class StuntJumpGUI(QMainWindow):
             # Update the plot with simulation
             self.plot_initial_ramp(run_simulation=True)
             
+            # Get the simulation results
+            results = self.last_simulation_results['ramp_result']
+            
             if self.animation_flag:
-                self.status_label.setText("Simulation complete! Animation saved as 'stunt_jump.mp4'")
+                if results['end_track_flag']:
+                    x_landing = self.last_simulation_results['ballistic_result']['x_full'][-1] / convert_in_to_m / 12
+                    x_end = results['x_end'] / convert_in_to_m / 12
+                    distance = (x_landing - x_end) * 12  # Convert to inches
+                    self.status_label.setText(f"Simulation complete! Car jumped and traveled {distance:.2f} inches from the end of the track. Animation saved as 'stunt_jump.mp4'")
+                else:
+                    self.status_label.setText(f"Simulation complete! Car stayed on the ramp and took {results['t_to_rest']:.2f} seconds to come to rest. Animation saved as 'stunt_jump.mp4'")
             else:
-                self.status_label.setText("Simulation complete!")
+                if results['end_track_flag']:
+                    x_landing = self.last_simulation_results['ballistic_result']['x_full'][-1] / convert_in_to_m / 12
+                    x_end = results['x_end'] / convert_in_to_m / 12
+                    distance = (x_landing - x_end) * 12  # Convert to inches
+                    self.status_label.setText(f"Simulation complete! Car jumped and traveled {distance:.2f} inches from the end of the track.")
+                else:
+                    self.status_label.setText(f"Simulation complete! Car stayed on the ramp and took {results['t_to_rest']:.2f} seconds to come to rest.")
         except ValueError:
             self.status_label.setText("Invalid input value")
 
