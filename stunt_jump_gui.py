@@ -35,10 +35,10 @@ class StuntJumpGUI(QMainWindow):
         
         # Initial anchor points in feet
         self.anchor_locations = np.array([
-            [1, 3],
+            [1, 2], # feet
             [2, 1],
-            [3, 1.5],
-        ]) * 12  # Convert to inches
+            [3, 2],
+        ]) * 12
         
         # Create main widget and layout
         main_widget = QWidget()
@@ -268,7 +268,7 @@ class StuntJumpGUI(QMainWindow):
                 distance = (x_landing - x_end) * 12  # Convert to inches
                 self.status_label.setText(f"Simulation complete! Car traveled {distance:.2f} inches from the end of the track.")
             else:
-                self.status_label.setText("Simulation complete! Car did not reach the end of the track.")
+                self.status_label.setText(f"Simulation complete! Car did not reach the end of the track, and took {results['ramp_result']['t_to_rest']:.2f} seconds to come to rest.")
         
         # Plot the current ramp shape and control points if visible
         if self.show_ramp:
@@ -406,10 +406,10 @@ class StuntJumpGUI(QMainWindow):
     def reset(self):
         # Reset to initial anchor points
         self.anchor_locations = np.array([
-            [1, 3],
+            [1, 2], # feet
             [2, 1],
-            [3, 1.5],
-        ]) * 12  # Convert to inches
+            [3, 2],
+        ]) * 12
         
         # Reset friction factor
         self.friction_factor = 0.1

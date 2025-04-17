@@ -500,12 +500,12 @@ def plot_and_animate_car_motion(params, ax=None):
     ax.set_xlim(0, 10)
     ax.set_xlabel('x [feet]')
     ax.set_ylabel('y [feet]')
-    if ramp_type == 'halfpipe' and at_rest_flag:
-        ax.set_title(f'Halfpipe: {t_to_rest:.2f}s')
+    if at_rest_flag:
+        ax.set_title(f'Time to come to rest: {t_to_rest:.2f}s')
         print(f'The car took approximately {t_to_rest:.2f} seconds to come to rest.')
-    elif ramp_type == 'jump' and end_track_flag:
+    elif end_track_flag:
         x_landing = x_full[-1]
-        ax.set_title(f'Jump: {(x_landing - x_end) / convert_in_to_m:.2f} inches')
+        ax.set_title(f'Distance traveled from end of track: {(x_landing - x_end) / convert_in_to_m:.2f} inches')
         print(f'The car traveled {(x_landing - x_end) / convert_in_to_m:.2f} inches from the end of the track!')
 
     # Save the plot
