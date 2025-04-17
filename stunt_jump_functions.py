@@ -8,6 +8,7 @@ from matplotlib.patches import Ellipse
 from scipy.interpolate import CubicSpline
 from scipy.interpolate import interp1d
 from scipy.integrate import solve_ivp
+from PIL import Image, ImageOps
 
 # ------------------------------------------------------------------------------
 # ---------------------------- CONSTANTS ---------------------------------------
@@ -215,6 +216,8 @@ def compute_path_length_and_maps(xs, ys):
         "p2kappa": p2kappa,
         "truncated_length": truncated_length,
         "n_long_track_segments": n_long_track_segments,
+        "xs": xs,
+        "ys": ys,
     }
 
 def integrate_ramp_ode(ramp_params, ramp_ode_fun, end_track, at_rest):
@@ -558,6 +561,7 @@ def simulate_stunt_jump(params):
             - animation_flag (bool): Whether to create an animation
             - anchor_locations (np.ndarray): Array of [x,y] coordinates for ramp anchors (in feet)
             - ring_1, ring_2, ring_3 (list): Ring locations (in feet)
+            - save_inverted_image (bool): Whether to save an inverted version of the plot (default: False)
 
     Returns:
         dict: A dictionary containing all simulation results
@@ -571,6 +575,7 @@ def simulate_stunt_jump(params):
     ring_1 = params['ring_1']
     ring_2 = params['ring_2']
     ring_3 = params['ring_3']
+    save_inverted_image = params.get('save_inverted_image', False)  # Default to False if not specified
 
     # Extract positions of spline nodes
     xnodes = np.array(anchor_locations[:,0])
@@ -587,7 +592,7 @@ def simulate_stunt_jump(params):
     xs = xs * convert_in_to_m # m
     ys = ys * convert_in_to_m # m
 
-    # Compute path length and maps
+    # Compute path length and maps.
     path_maps = compute_path_length_and_maps(xs, ys)
 
     # Define ramp parameters
@@ -629,8 +634,8 @@ def simulate_stunt_jump(params):
     plot_params = {
         'xnodes': xnodes,
         'ynodes': ynodes,
-        'xs': xs,
-        'ys': ys,
+        'xs': path_maps["xs"],
+        'ys': path_maps["ys"],
         'x_full': ballistic_result["x_full"],
         'y_full': ballistic_result["y_full"],
         'ps': path_maps["ps"],
@@ -650,6 +655,12 @@ def simulate_stunt_jump(params):
     }
 
     plot_and_animate_car_motion(plot_params)
+
+    # Save inverted image if requested
+    if save_inverted_image:
+        img = Image.open('stunt_jump.png').convert('RGB')
+        img_inv = ImageOps.invert(img)
+        img_inv.save('stunt_jump_inv.png')
 
     # Return all results
     return {

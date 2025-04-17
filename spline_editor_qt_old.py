@@ -82,11 +82,43 @@ class SplineEditor(QMainWindow):
         node_positions[:, 0] = (node_positions[:, 0] - 74) / self.ppi
         node_positions[:, 1] = (453 - node_positions[:, 1]) / self.ppi
         
+        # Set up simulation parameters
+        params = {
+            'friction_factor': 0.1,  # Default friction factor
+            'p_initial': 0.0,  # Start at beginning of track
+            'ramp_type': 'jump',  # We're simulating a jump
+            'animation_flag': False,  # Don't create animation
+            'anchor_locations': node_positions,  # Our spline nodes
+            'ring_1': [5, 1.75],  # Default ring locations
+            'ring_2': [6, 1.6],
+            'ring_3': [7, 0.9]
+        }
+        
+        # Run simulation
+        from stunt_jump_functions import simulate_stunt_jump
+        results = simulate_stunt_jump(params)
+        
+        # Get trajectory coordinates
+        x_full = results['ballistic_result']['x_full']
+        y_full = results['ballistic_result']['y_full']
+        
+        # Convert trajectory to pixels for display
+        x_full = x_full * self.ppi
+        y_full = y_full * self.ppi
+        x_full = x_full + 74
+        y_full = 453 - y_full
+        
+        # Create trajectory path
+        self.trajectory_path = QPainterPath()
+        self.trajectory_path.moveTo(x_full[0], y_full[0])
+        for i in range(1, len(x_full)):
+            self.trajectory_path.lineTo(x_full[i], y_full[i])
+        
+        # Update canvas to show trajectory
+        self.canvas.update()
+        
         # Store coordinates for later use
         self.coordinates = node_positions
-        
-        # Close the window
-        self.close()
 
 class Canvas(QWidget):
     def __init__(self, editor):
@@ -106,6 +138,11 @@ class Canvas(QWidget):
         if self.editor.spline_path:
             painter.setPen(QPen(QColor("blue"), 2))
             painter.drawPath(self.editor.spline_path)
+        
+        # Draw trajectory
+        if self.editor.trajectory_path:
+            painter.setPen(QPen(QColor("green"), 2, Qt.DashLine))
+            painter.drawPath(self.editor.trajectory_path)
         
         # Draw nodes
         painter.setPen(QPen(QColor("black"), 2))
