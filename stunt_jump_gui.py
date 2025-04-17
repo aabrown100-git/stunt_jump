@@ -109,6 +109,42 @@ class StuntJumpGUI(QMainWindow):
         # Add parameter controls to main layout
         control_layout.addLayout(param_controls)
 
+        # Add control point coordinate inputs
+        control_points_panel = QWidget()
+        self.control_points_layout = QVBoxLayout(control_points_panel)
+        
+        # Add title for control points section
+        control_points_title = QLabel("Control Point Coordinates (feet):")
+        self.control_points_layout.addWidget(control_points_title)
+        
+        # Create input fields for each control point
+        self.control_point_inputs = []
+        for i in range(len(self.anchor_locations)):
+            point_layout = QHBoxLayout()
+            point_layout.addWidget(QLabel(f"Point {i+1}:"))
+            
+            # X coordinate input
+            x_input = QLineEdit(str(self.anchor_locations[i][0]/12))
+            x_input.setFixedWidth(60)
+            point_layout.addWidget(QLabel("x:"))
+            point_layout.addWidget(x_input)
+            
+            # Y coordinate input
+            y_input = QLineEdit(str(self.anchor_locations[i][1]/12))
+            y_input.setFixedWidth(60)
+            point_layout.addWidget(QLabel("y:"))
+            point_layout.addWidget(y_input)
+            
+            self.control_point_inputs.append((x_input, y_input))
+            self.control_points_layout.addLayout(point_layout)
+        
+        # Add update button for control points
+        self.update_points_button = QPushButton("Update Control Points")
+        self.update_points_button.clicked.connect(self.update_control_points)
+        self.control_points_layout.addWidget(self.update_points_button)
+        
+        control_layout.addWidget(control_points_panel)
+
         # Add ring controls
         ring_control_panel = QWidget()
         ring_control_layout = QVBoxLayout(ring_control_panel)
@@ -305,6 +341,11 @@ class StuntJumpGUI(QMainWindow):
                 event.ydata * 12
             ]
             
+            # Update the coordinate input fields
+            x_input, y_input = self.control_point_inputs[self.dragged_point]
+            x_input.setText(f"{event.xdata:.2f}")
+            y_input.setText(f"{event.ydata:.2f}")
+            
             # Clear only the control points and ramp
             for artist in self.ax.lines:
                 if artist.get_label() in ['Control Points', 'Ramp']:
@@ -320,6 +361,51 @@ class StuntJumpGUI(QMainWindow):
             
             self.canvas.draw()
             
+    def update_control_point_inputs(self):
+        # Clear existing control point inputs
+        for i in reversed(range(self.control_points_layout.count())):
+            item = self.control_points_layout.itemAt(i)
+            if item.widget():
+                item.widget().deleteLater()
+            elif item.layout():
+                # Clear layout items
+                for j in reversed(range(item.layout().count())):
+                    subitem = item.layout().itemAt(j)
+                    if subitem.widget():
+                        subitem.widget().deleteLater()
+        
+        # Clear the list of control point inputs
+        self.control_point_inputs = []
+        
+        # Add title for control points section
+        control_points_title = QLabel("Control Point Coordinates (feet):")
+        self.control_points_layout.addWidget(control_points_title)
+        
+        # Create input fields for each control point
+        for i in range(len(self.anchor_locations)):
+            point_layout = QHBoxLayout()
+            point_layout.addWidget(QLabel(f"Point {i+1}:"))
+            
+            # X coordinate input
+            x_input = QLineEdit(str(self.anchor_locations[i][0]/12))
+            x_input.setFixedWidth(60)
+            point_layout.addWidget(QLabel("x:"))
+            point_layout.addWidget(x_input)
+            
+            # Y coordinate input
+            y_input = QLineEdit(str(self.anchor_locations[i][1]/12))
+            y_input.setFixedWidth(60)
+            point_layout.addWidget(QLabel("y:"))
+            point_layout.addWidget(y_input)
+            
+            self.control_point_inputs.append((x_input, y_input))
+            self.control_points_layout.addLayout(point_layout)
+        
+        # Add update button for control points
+        self.update_points_button = QPushButton("Update Control Points")
+        self.update_points_button.clicked.connect(self.update_control_points)
+        self.control_points_layout.addWidget(self.update_points_button)
+
     def add_point(self):
         if len(self.anchor_locations) >= 2:
             # Get the last two points
@@ -337,6 +423,9 @@ class StuntJumpGUI(QMainWindow):
             sort_indices = np.argsort(self.anchor_locations[:, 0])
             self.anchor_locations = self.anchor_locations[sort_indices]
             
+            # Update the control point inputs
+            self.update_control_point_inputs()
+            
             # Update the plot
             self.plot_initial_ramp(run_simulation=False, clear_plot=True)  # Clear plot to show only last simulation
             self.status_label.setText(f"Added new point at ({new_x/12:.2f}, {new_y/12:.2f}) feet")
@@ -348,6 +437,9 @@ class StuntJumpGUI(QMainWindow):
             # Remove the last point
             removed_point = self.anchor_locations[-1]
             self.anchor_locations = self.anchor_locations[:-1]
+            
+            # Update the control point inputs
+            self.update_control_point_inputs()
             
             # Update the plot
             self.plot_initial_ramp(run_simulation=False, clear_plot=True)  # Clear plot to show only last simulation
@@ -452,6 +544,26 @@ class StuntJumpGUI(QMainWindow):
         self.show_ramp = not self.show_ramp
         self.toggle_ramp_button.setText("Show Ramp" if not self.show_ramp else "Hide Ramp")
         self.plot_initial_ramp(run_simulation=False, clear_plot=True)
+
+    def update_control_points(self):
+        try:
+            # Update anchor locations from input fields
+            new_anchor_locations = []
+            for x_input, y_input in self.control_point_inputs:
+                x = float(x_input.text()) * 12  # Convert feet to inches
+                y = float(y_input.text()) * 12  # Convert feet to inches
+                new_anchor_locations.append([x, y])
+            
+            # Sort points by x-coordinate
+            new_anchor_locations = np.array(new_anchor_locations)
+            sort_indices = np.argsort(new_anchor_locations[:, 0])
+            self.anchor_locations = new_anchor_locations[sort_indices]
+            
+            # Update the plot
+            self.plot_initial_ramp(run_simulation=False, clear_plot=True)
+            self.status_label.setText("Control point positions updated")
+        except ValueError:
+            self.status_label.setText("Invalid control point coordinates")
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
