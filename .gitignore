@@ -38,6 +38,6 @@ ENV/
 Thumbs.db 
 
 # Images
-*.png
-*.gif
-*.mp4
+stunt_jump.png
+stunt_jump_inv.png
+stunt_jump.mp4
