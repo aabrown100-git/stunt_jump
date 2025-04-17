@@ -465,8 +465,8 @@ def plot_and_animate_car_motion(params, ax=None):
     # Label the angle at the end of the ramp
     if end_track_flag:
         theta_end = np.arctan2(p2k(ps[-1]), 1.0)
-        offset_x = 0.15
-        offset_y = 0.04
+        offset_x = 0.2  
+        offset_y = -0.1 
         ax.text(
             x_end / convert_in_to_m / 12 + offset_x,
             y_end / convert_in_to_m / 12 + offset_y,
@@ -474,17 +474,6 @@ def plot_and_animate_car_motion(params, ax=None):
             fontsize=8,
             color='black',
             ha='left'
-        )
-        # Add an angle symbol to show the angle
-        ax.plot(
-            [x_end / convert_in_to_m / 12, x_end / convert_in_to_m / 12 + 0.3 * np.cos(theta_end)],
-            [y_end / convert_in_to_m / 12, y_end / convert_in_to_m / 12 + 0.3 * np.sin(theta_end)],
-            color='black'
-        )
-        ax.plot(
-            [x_end / convert_in_to_m / 12, x_end / convert_in_to_m / 12 + 0.3],
-            [y_end / convert_in_to_m / 12, y_end / convert_in_to_m / 12],
-            color='black'
         )
 
     # Plot diamond marker at each long track segment junction
