@@ -89,12 +89,25 @@ class StuntJumpGUI(QMainWindow):
         # Add simulation controls to main layout
         control_layout.addLayout(sim_controls)
         
+        # Create vertical layout for parameter controls
+        param_controls = QVBoxLayout()
+        
         # Add friction factor control
         friction_layout = QHBoxLayout()
         friction_layout.addWidget(QLabel("Friction Factor:"))
         self.friction_input = QLineEdit(str(self.friction_factor))
         friction_layout.addWidget(self.friction_input)
-        control_layout.addLayout(friction_layout)
+        param_controls.addLayout(friction_layout)
+
+        # Add p_initial control
+        p_initial_layout = QHBoxLayout()
+        p_initial_layout.addWidget(QLabel("Initial Position (inches):"))
+        self.p_initial_input = QLineEdit(str(self.p_initial / convert_in_to_m))
+        p_initial_layout.addWidget(self.p_initial_input)
+        param_controls.addLayout(p_initial_layout)
+        
+        # Add parameter controls to main layout
+        control_layout.addLayout(param_controls)
 
         # Add ring controls
         ring_control_panel = QWidget()
@@ -372,6 +385,8 @@ class StuntJumpGUI(QMainWindow):
         try:
             # Update friction factor from input
             self.friction_factor = float(self.friction_input.text())
+            # Update p_initial from input
+            self.p_initial = float(self.p_initial_input.text()) * convert_in_to_m
             self.status_label.setText("Simulating...")
             QApplication.processEvents()
             
@@ -386,7 +401,7 @@ class StuntJumpGUI(QMainWindow):
             else:
                 self.status_label.setText("Simulation complete!")
         except ValueError:
-            self.status_label.setText("Invalid friction factor value")
+            self.status_label.setText("Invalid input value")
 
     def reset(self):
         # Reset to initial anchor points
@@ -399,6 +414,10 @@ class StuntJumpGUI(QMainWindow):
         # Reset friction factor
         self.friction_factor = 0.1
         self.friction_input.setText(str(self.friction_factor))
+        
+        # Reset p_initial
+        self.p_initial = 0.0 * convert_in_to_m
+        self.p_initial_input.setText(str(self.p_initial / convert_in_to_m))
         
         # Reset ramp visibility
         self.show_ramp = True
