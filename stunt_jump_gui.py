@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
-                            QPushButton, QLabel, QHBoxLayout, QLineEdit)
+                            QPushButton, QLabel, QHBoxLayout, QLineEdit, QCheckBox)
 from PyQt6.QtCore import Qt
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -61,6 +61,11 @@ class StuntJumpGUI(QMainWindow):
         self.simulate_button = QPushButton("Simulate")
         self.simulate_button.clicked.connect(self.simulate)
         control_layout.addWidget(self.simulate_button)
+        
+        # Add animation checkbox
+        self.animation_checkbox = QCheckBox("Save Animation")
+        self.animation_checkbox.stateChanged.connect(self.toggle_animation)
+        control_layout.addWidget(self.animation_checkbox)
         
         self.reset_button = QPushButton("Reset")
         self.reset_button.clicked.connect(self.reset)
@@ -348,6 +353,9 @@ class StuntJumpGUI(QMainWindow):
         
         return xs_ft, ys_ft
         
+    def toggle_animation(self, state):
+        self.animation_flag = state == Qt.CheckState.Checked.value
+
     def simulate(self):
         try:
             # Update friction factor from input
@@ -360,6 +368,11 @@ class StuntJumpGUI(QMainWindow):
             
             # Update the plot with simulation
             self.plot_initial_ramp(run_simulation=True)
+            
+            if self.animation_flag:
+                self.status_label.setText("Simulation complete! Animation saved as 'stunt_jump.mp4'")
+            else:
+                self.status_label.setText("Simulation complete!")
         except ValueError:
             self.status_label.setText("Invalid friction factor value")
 
@@ -379,6 +392,10 @@ class StuntJumpGUI(QMainWindow):
         self.show_ramp = True
         self.toggle_ramp_button.setChecked(False)
         self.toggle_ramp_button.setText("Hide Ramp")
+        
+        # Reset animation flag
+        self.animation_flag = False
+        self.animation_checkbox.setChecked(False)
         
         # Clear last simulation results
         self.last_simulation_results = None
