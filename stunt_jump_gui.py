@@ -538,6 +538,9 @@ class StuntJumpGUI(QMainWindow):
         # Clear last simulation results
         self.last_simulation_results = None
         
+        # Update the control point inputs
+        self.update_control_point_inputs()
+        
         # Redraw the plot
         self.plot_initial_ramp(run_simulation=True, clear_plot=True)
         self.status_label.setText("Reset to initial configuration")
