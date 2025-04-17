@@ -1,7 +1,7 @@
 import sys
 import numpy as np
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
-                            QPushButton, QLabel, QHBoxLayout)
+                            QPushButton, QLabel, QHBoxLayout, QLineEdit)
 from PyQt6.QtCore import Qt
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -23,6 +23,7 @@ class StuntJumpGUI(QMainWindow):
         self.p_initial = 0.0 * convert_in_to_m
         self.ramp_type = 'jump'
         self.animation_flag = False
+        self.show_ramp = True  # Flag to control ramp visibility
         
         # Store last simulation results
         self.last_simulation_results = None
@@ -34,9 +35,9 @@ class StuntJumpGUI(QMainWindow):
         
         # Initial anchor points in feet
         self.anchor_locations = np.array([
-            [0, 5],
-            [1, 2],
-            [2, 2.5],
+            [1, 3],
+            [2, 1],
+            [3, 1.5],
         ]) * 12  # Convert to inches
         
         # Create main widget and layout
@@ -64,6 +65,63 @@ class StuntJumpGUI(QMainWindow):
         self.reset_button = QPushButton("Reset")
         self.reset_button.clicked.connect(self.reset)
         control_layout.addWidget(self.reset_button)
+
+        # Add friction factor control
+        friction_layout = QHBoxLayout()
+        friction_layout.addWidget(QLabel("Friction Factor:"))
+        self.friction_input = QLineEdit(str(self.friction_factor))
+        friction_layout.addWidget(self.friction_input)
+        control_layout.addLayout(friction_layout)
+
+        # Add ramp visibility toggle
+        self.toggle_ramp_button = QPushButton("Hide Ramp")
+        self.toggle_ramp_button.setCheckable(True)
+        self.toggle_ramp_button.clicked.connect(self.toggle_ramp)
+        control_layout.addWidget(self.toggle_ramp_button)
+
+        # Add ring controls
+        ring_control_panel = QWidget()
+        ring_control_layout = QVBoxLayout(ring_control_panel)
+        
+        # Ring 1 controls
+        ring1_layout = QHBoxLayout()
+        ring1_layout.addWidget(QLabel("Ring 1:"))
+        self.ring1_x = QLineEdit(str(self.ring_1[0]))
+        self.ring1_y = QLineEdit(str(self.ring_1[1]))
+        ring1_layout.addWidget(QLabel("x:"))
+        ring1_layout.addWidget(self.ring1_x)
+        ring1_layout.addWidget(QLabel("y:"))
+        ring1_layout.addWidget(self.ring1_y)
+        ring_control_layout.addLayout(ring1_layout)
+        
+        # Ring 2 controls
+        ring2_layout = QHBoxLayout()
+        ring2_layout.addWidget(QLabel("Ring 2:"))
+        self.ring2_x = QLineEdit(str(self.ring_2[0]))
+        self.ring2_y = QLineEdit(str(self.ring_2[1]))
+        ring2_layout.addWidget(QLabel("x:"))
+        ring2_layout.addWidget(self.ring2_x)
+        ring2_layout.addWidget(QLabel("y:"))
+        ring2_layout.addWidget(self.ring2_y)
+        ring_control_layout.addLayout(ring2_layout)
+        
+        # Ring 3 controls
+        ring3_layout = QHBoxLayout()
+        ring3_layout.addWidget(QLabel("Ring 3:"))
+        self.ring3_x = QLineEdit(str(self.ring_3[0]))
+        self.ring3_y = QLineEdit(str(self.ring_3[1]))
+        ring3_layout.addWidget(QLabel("x:"))
+        ring3_layout.addWidget(self.ring3_x)
+        ring3_layout.addWidget(QLabel("y:"))
+        ring3_layout.addWidget(self.ring3_y)
+        ring_control_layout.addLayout(ring3_layout)
+        
+        # Add update button for rings
+        self.update_rings_button = QPushButton("Update Rings")
+        self.update_rings_button.clicked.connect(self.update_rings)
+        ring_control_layout.addWidget(self.update_rings_button)
+        
+        control_layout.addWidget(ring_control_panel)
         
         layout.addWidget(control_panel)
         
@@ -182,9 +240,10 @@ class StuntJumpGUI(QMainWindow):
             else:
                 self.status_label.setText("Simulation complete! Car did not reach the end of the track.")
         
-        # Plot the current ramp shape and control points
-        self.ax.plot(xs_ft, ys_ft, color='orange', linewidth=2, label='Ramp', zorder=2)
-        self.ax.plot(self.anchor_locations[:, 0]/12, self.anchor_locations[:, 1]/12, 'ro', label='Control Points', zorder=3)
+        # Plot the current ramp shape and control points if visible
+        if self.show_ramp:
+            self.ax.plot(xs_ft, ys_ft, color='orange', linewidth=2, label='Ramp', zorder=2)
+            self.ax.plot(self.anchor_locations[:, 0]/12, self.anchor_locations[:, 1]/12, 'ro', label='Control Points', zorder=3)
         
         self.canvas.draw()
         
@@ -224,9 +283,10 @@ class StuntJumpGUI(QMainWindow):
             # Get new ramp coordinates
             xs_ft, ys_ft = self.get_ramp_coordinates()
             
-            # Plot new ramp and control points
-            self.ax.plot(xs_ft, ys_ft, color='orange', linewidth=2, label='Ramp', zorder=2)
-            self.ax.plot(self.anchor_locations[:, 0]/12, self.anchor_locations[:, 1]/12, 'ro', label='Control Points', zorder=3)
+            # Plot new ramp and control points if visible
+            if self.show_ramp:
+                self.ax.plot(xs_ft, ys_ft, color='orange', linewidth=2, label='Ramp', zorder=2)
+                self.ax.plot(self.anchor_locations[:, 0]/12, self.anchor_locations[:, 1]/12, 'ro', label='Control Points', zorder=3)
             
             self.canvas.draw()
             
@@ -289,22 +349,36 @@ class StuntJumpGUI(QMainWindow):
         return xs_ft, ys_ft
         
     def simulate(self):
-        self.status_label.setText("Simulating...")
-        QApplication.processEvents()
-        
-        # Clear last simulation results before running new simulation
-        self.last_simulation_results = None
-        
-        # Update the plot with simulation
-        self.plot_initial_ramp(run_simulation=True)
-        
+        try:
+            # Update friction factor from input
+            self.friction_factor = float(self.friction_input.text())
+            self.status_label.setText("Simulating...")
+            QApplication.processEvents()
+            
+            # Clear last simulation results before running new simulation
+            self.last_simulation_results = None
+            
+            # Update the plot with simulation
+            self.plot_initial_ramp(run_simulation=True)
+        except ValueError:
+            self.status_label.setText("Invalid friction factor value")
+
     def reset(self):
         # Reset to initial anchor points
         self.anchor_locations = np.array([
-            [0, 5],  # feet
-            [1, 2],
-            [2, 2.5],
+            [1, 3],
+            [2, 1],
+            [3, 1.5],
         ]) * 12  # Convert to inches
+        
+        # Reset friction factor
+        self.friction_factor = 0.1
+        self.friction_input.setText(str(self.friction_factor))
+        
+        # Reset ramp visibility
+        self.show_ramp = True
+        self.toggle_ramp_button.setChecked(False)
+        self.toggle_ramp_button.setText("Hide Ramp")
         
         # Clear last simulation results
         self.last_simulation_results = None
@@ -312,6 +386,24 @@ class StuntJumpGUI(QMainWindow):
         # Redraw the plot
         self.plot_initial_ramp(run_simulation=True, clear_plot=True)
         self.status_label.setText("Reset to initial configuration")
+
+    def update_rings(self):
+        try:
+            # Update ring locations from input fields
+            self.ring_1 = [float(self.ring1_x.text()), float(self.ring1_y.text())]
+            self.ring_2 = [float(self.ring2_x.text()), float(self.ring2_y.text())]
+            self.ring_3 = [float(self.ring3_x.text()), float(self.ring3_y.text())]
+            
+            # Redraw the plot with new ring positions
+            self.plot_initial_ramp(run_simulation=False, clear_plot=True)
+            self.status_label.setText("Ring positions updated")
+        except ValueError:
+            self.status_label.setText("Invalid ring position values")
+
+    def toggle_ramp(self):
+        self.show_ramp = not self.show_ramp
+        self.toggle_ramp_button.setText("Show Ramp" if not self.show_ramp else "Hide Ramp")
+        self.plot_initial_ramp(run_simulation=False, clear_plot=True)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
