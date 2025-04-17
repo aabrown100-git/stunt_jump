@@ -462,6 +462,9 @@ def plot_and_animate_car_motion(params, ax=None):
     ax.plot(xs_ft, ys_ft, color='orange', linewidth=2)  # Plot track
     ax.scatter(xnodes_ft, ynodes_ft, color='gray')  # Plot spline nodes
 
+    # Plot initial position marker as an open green circle
+    ax.scatter(x_full_ft[0], y_full_ft[0], color='green', marker='o', s=100, facecolors='none', edgecolors='green', linewidth=2, zorder=5)
+
     # Label the angle at the end of the ramp
     if end_track_flag:
         theta_end = np.arctan2(p2k(ps[-1]), 1.0)
