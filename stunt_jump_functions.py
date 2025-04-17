@@ -392,7 +392,7 @@ def integrate_ballistic_ode(params):
         "t_full": t_full,
     }
 
-def plot_and_animate_car_motion(params):
+def plot_and_animate_car_motion(params, ax=None):
     """
     Plots the motion of the car on the track and in the air, and optionally creates an animation.
 
@@ -412,6 +412,7 @@ def plot_and_animate_car_motion(params):
             - t_to_rest (float): Time taken for the car to come to rest.
             - t_full (np.ndarray): Full time points of the car's motion.
             - animation_flag (bool): Whether to create an animation.
+        ax (matplotlib.axes.Axes, optional): Existing axes to plot on. If None, creates new figure and axes.
 
     Returns:
         None
@@ -451,8 +452,13 @@ def plot_and_animate_car_motion(params):
     ring_2_ellipse = Ellipse(xy=ring_2, width=0.2, height=6 / 12, facecolor="none", edgecolor="k")
     ring_3_ellipse = Ellipse(xy=ring_3, width=0.2, height=6 / 12, facecolor="none", edgecolor="k")
 
+    # Create figure and axes if not provided
+    if ax is None:
+        fig, ax = plt.subplots(figsize=(10, 5), dpi=200, layout='constrained')
+    else:
+        fig = ax.figure
+
     # Plot track, nodes, long segments, rings, and car trajectory
-    fig, ax = plt.subplots(figsize=(10, 5), dpi=200, layout='constrained')
     ax.plot(xs_ft, ys_ft, color='orange', linewidth=2)  # Plot track
     ax.scatter(xnodes_ft, ynodes_ft, color='gray')  # Plot spline nodes
 
@@ -495,19 +501,19 @@ def plot_and_animate_car_motion(params):
     # Plot car trajectory
     ax.plot(x_full_ft, y_full_ft, color='green', linestyle=':')  # Plot car trajectory
     ax.set_aspect('equal', 'box')  # Set x,y aspect ratio equal
-    plt.xticks(np.arange(0, 10, 1))
-    plt.yticks(np.arange(0, 5, 1))
-    plt.grid(visible=True)
-    plt.ylim(0, 5)
-    plt.xlim(0, 10)
-    plt.xlabel('x [feet]')
-    plt.ylabel('y [feet]')
+    ax.set_xticks(np.arange(0, 10, 1))
+    ax.set_yticks(np.arange(0, 5, 1))
+    ax.grid(visible=True)
+    ax.set_ylim(0, 5)
+    ax.set_xlim(0, 10)
+    ax.set_xlabel('x [feet]')
+    ax.set_ylabel('y [feet]')
     if ramp_type == 'halfpipe' and at_rest_flag:
-        plt.title(f'Halfpipe: {t_to_rest:.2f}s')
+        ax.set_title(f'Halfpipe: {t_to_rest:.2f}s')
         print(f'The car took approximately {t_to_rest:.2f} seconds to come to rest.')
     elif ramp_type == 'jump' and end_track_flag:
         x_landing = x_full[-1]
-        plt.title(f'Jump: {(x_landing - x_end) / convert_in_to_m:.2f} inches')
+        ax.set_title(f'Jump: {(x_landing - x_end) / convert_in_to_m:.2f} inches')
         print(f'The car traveled {(x_landing - x_end) / convert_in_to_m:.2f} inches from the end of the track!')
 
     # Save the plot
