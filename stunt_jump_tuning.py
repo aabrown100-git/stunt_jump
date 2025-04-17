@@ -1,7 +1,6 @@
 from stunt_jump_functions import *
 import numpy as np
 ################################################################################
-
 # ------------------------------------------------------------------------------
 # ---------------------------- SIMULATION PARAMETERS ---------------------------
 # ------------------------------------------------------------------------------
@@ -9,15 +8,16 @@ import numpy as np
 friction_factor = 0.045
 
 # This is the starting position from the start of the ramp
-p_initial = 0.; # inches
+p_initial = 0. # inches
 p_initial = p_initial * convert_in_to_m
-
-# Simulation mode (halfpipe vs jump)
-ramp_type = 'halfpipe'
 
 # Animation flag
 animation_flag = True
 
+################################################################################
+# ------------------------------------------------------------------------------
+# ---------------------------- RAMP SHAPE --------------------------------------
+# ------------------------------------------------------------------------------
 # Define the location of ramp anchors, which serve as spine nodes
 anchor_locations = np.array([
     [0, 1], # feet
@@ -31,7 +31,6 @@ ring_2 = [6, 1.6] # ft
 ring_3 = [7, 0.9] # ft
 
 ################################################################################
-
 # ------------------------------------------------------------------------------
 # ------------------------ RUN SIMULATION --------------------------------------
 # ------------------------------------------------------------------------------
@@ -40,7 +39,7 @@ ring_3 = [7, 0.9] # ft
 sim_params = {
     'friction_factor': friction_factor,
     'p_initial': p_initial,
-    'ramp_type': ramp_type,
+    'ramp_type': 'halfpipe',
     'animation_flag': animation_flag,
     'anchor_locations': anchor_locations,
     'ring_1': ring_1,
