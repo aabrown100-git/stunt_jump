@@ -12,7 +12,7 @@ p_initial = 0. # inches
 p_initial = p_initial * convert_in_to_m
 
 # Animation flag
-animation_flag = True
+animation_flag = False
 
 ################################################################################
 # ------------------------------------------------------------------------------
