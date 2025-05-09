@@ -25,6 +25,29 @@ long_track_segment_in = 11. + 13./16.; # length of long track segment in inches
 # ------------------------------------ FUNCTIONS -------------------------------
 # ------------------------------------------------------------------------------
 
+def total_energy(state, params):
+    '''
+    Computes the total energy of the car at a given state.
+    The total energy is the sum of kinetic and potential energy.
+    '''
+
+    # Unpack variables from state
+    p = state[0] # Path length
+    v = state[1] # Velocity
+
+    # Unpack parameters
+    p2y = params['p2y'] # Function to get y-coordinate from path length
+    y_track_min = params['y_track_min'] # Minimum y-coordinate of the track
+    
+    # Compute kinetic energy
+    KE = 0.5 * v**2
+
+    # Compute potential energy
+    h = p2y(p) - y_track_min
+    PE = 9.81 * h
+
+    return KE + PE, KE, PE
+
 def ramp_ode_fun(t, state, params):
     '''
     The differential equation for the car on the ramp
@@ -86,19 +109,16 @@ end_track.direction = 1
 def at_rest(t, state, params):
     '''
     The event function to determine if the car has come to rest.
-    The car is at rest if both velocity and acceleration are zero
+    The car is at rest if the total energy is close to zero.
     '''
 
-    # Get velocity from state
-    v = state[1] # Velocity
-
-    # Calculate acceleration
-    dvdt = ramp_ode_fun(t, state, params)[1] # Acceleration
+    # Compute kinetic + potential energy (divided by mass)
+    E, _, _ = total_energy(state, params)
 
     # Tolerance for closeness to zero
-    tol = 1e-1
+    tol = 1e-3
 
-    return np.abs(v) + np.abs(dvdt) - tol
+    return E - tol
     # return np.max([np.abs(v), np.abs(dvdt)]) - tol
 
 # Don't stop the integration when car comes to rest
@@ -197,6 +217,9 @@ def compute_path_length_and_maps(xs, ys):
     p2y = interp1d(ps, ys, fill_value="extrapolate", kind="cubic")
     x2y = interp1d(xs, ys, fill_value="extrapolate", kind="cubic")
 
+    # Calculate minimum y-coordinate of the track
+    y_track_min = np.min(ys)
+
     # Create map from p to k (slope)
     dp = 1e-6  # finite difference for slope calculation (dy/dx)
     ks = (p2y(ps + dp) - p2y(ps)) / (p2x(ps + dp) - p2x(ps))
@@ -219,6 +242,7 @@ def compute_path_length_and_maps(xs, ys):
         "n_long_track_segments": n_long_track_segments,
         "xs": xs,
         "ys": ys,
+        "y_track_min": y_track_min,
     }
 
 def integrate_ramp_ode(ramp_params, ramp_ode_fun, end_track, at_rest):
@@ -259,7 +283,7 @@ def integrate_ramp_ode(ramp_params, ramp_ode_fun, end_track, at_rest):
     # Solve the ODE
     soln = solve_ivp(
         ramp_ode_fun, t_span, state0, method='RK45', dense_output=True, events=[end_track, at_rest], args=(ramp_params,),
-        rtol = 1e-9, atol = 1e-12
+        rtol = 1e-6, atol = 1e-9
     )
 
     # Check if the car reached the end of the track or came to rest
@@ -303,6 +327,7 @@ def integrate_ramp_ode(ramp_params, ramp_ode_fun, end_track, at_rest):
         theta_end = None
 
     return {
+        "state_track": sol,
         "x_track": x_track,
         "y_track": y_track,
         "t_track": t_track,
@@ -366,7 +391,7 @@ def integrate_ballistic_ode(params):
         t_span = [0, 2]  # Time span of integration
         soln = solve_ivp(
             ballistic_ode_fun, t_span, state0, method='RK45', dense_output=True, events=hit_target,
-            rtol = 1e-9, atol = 1e-12
+            rtol = 1e-6, atol = 1e-9
         )
 
         # Plot solution at specified times
@@ -605,6 +630,7 @@ def simulate_stunt_jump(params):
         'p2y': path_maps["p2y"],
         'p2k': path_maps["p2k"],
         'p2kappa': path_maps["p2kappa"],
+        'y_track_min': path_maps["y_track_min"],
     }
 
     # Integrate ramp ODE
@@ -656,6 +682,28 @@ def simulate_stunt_jump(params):
     }
 
     plot_and_animate_car_motion(plot_params)
+
+    # Plot kinetic and potential energy over time
+    E, KE, PE = total_energy(ramp_result["state_track"], ramp_params)
+    E_tolerance = 1e-3
+    plt.figure(figsize=(8, 5), dpi=200)
+    plt.plot(ramp_result["t_track"], E, label='Total Energy', color='blue')
+    plt.plot(ramp_result["t_track"], KE, label='Kinetic Energy', color='red')
+    plt.plot(ramp_result["t_track"], PE, label='Potential Energy', color='green')
+    plt.axhline(E_tolerance, color='black', linestyle='--', linewidth=1)
+    plt.axvline(ramp_result["t_to_rest"], color='black', linestyle='--', linewidth=1)
+    plt.xlabel('Time [s]')
+    plt.ylabel('Energy [J/kg]')
+    plt.title('Energy vs Time')
+    plt.legend()
+    plt.grid()
+    plt.savefig('energy_vs_time.png')
+    
+    # Zoom in on the plot
+    plt.xlim(0.9*ramp_result["t_to_rest"], 1.1*ramp_result["t_to_rest"])
+    plt.ylim(0, 2*E_tolerance)
+    plt.savefig('energy_vs_time_zoomed.png')
+    plt.close()
 
     # Save inverted image if requested
     if save_inverted_image:

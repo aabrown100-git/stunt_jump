@@ -1,4 +1,3 @@
-# friction_vs_time.py
 import numpy as np
 import matplotlib.pyplot as plt
 from stunt_jump_functions import simulate_stunt_jump, convert_in_to_m
@@ -49,7 +48,7 @@ def main():
     plt.title('Half-pipe: Time to rest vs. friction')
     plt.grid(True)
     plt.tight_layout()
-    plt.savefig('friction_vs_time.png', dpi=150)
+    plt.savefig('time_to_rest_vs_friction.png', dpi=300)
 
 
 if __name__ == '__main__':
