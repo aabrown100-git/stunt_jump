@@ -99,11 +99,12 @@ def at_rest(t, state, params):
     tol = 1e-1
 
     return np.abs(v) + np.abs(dvdt) - tol
+    # return np.max([np.abs(v), np.abs(dvdt)]) - tol
 
 # Don't stop the integration when car comes to rest
 at_rest.terminal = False
 # Event direction doesn't matter in this case
-at_rest.direction = 0
+at_rest.direction = -1
 
 def ballistic_ode_fun(t, state):
     '''
@@ -253,11 +254,12 @@ def integrate_ramp_ode(ramp_params, ramp_ode_fun, end_track, at_rest):
     p0 = ramp_params['p_initial']  # Initial path length position
     v0 = 0  # Initial velocity
     state0 = np.array([p0, v0])
-    t_span = [0, 15]  # Time span of integration
+    t_span = [0, 100]  # Time span of integration
 
     # Solve the ODE
     soln = solve_ivp(
-        ramp_ode_fun, t_span, state0, method='RK45', dense_output=True, events=[end_track, at_rest], args=(ramp_params,)
+        ramp_ode_fun, t_span, state0, method='RK45', dense_output=True, events=[end_track, at_rest], args=(ramp_params,),
+        rtol = 1e-9, atol = 1e-12
     )
 
     # Check if the car reached the end of the track or came to rest
@@ -363,7 +365,8 @@ def integrate_ballistic_ode(params):
         # Integrate ballistic ODE
         t_span = [0, 2]  # Time span of integration
         soln = solve_ivp(
-            ballistic_ode_fun, t_span, state0, method='RK45', dense_output=True, events=hit_target
+            ballistic_ode_fun, t_span, state0, method='RK45', dense_output=True, events=hit_target,
+            rtol = 1e-9, atol = 1e-12
         )
 
         # Plot solution at specified times
@@ -581,7 +584,7 @@ def simulate_stunt_jump(params):
 
     # Create a cubic spline between anchor locations
     cs = CubicSpline(xnodes, ynodes, bc_type = 'not-a-knot')
-    xs = np.linspace(np.min(xnodes), np.max(xnodes), 1000)
+    xs = np.linspace(np.min(xnodes), np.max(xnodes), int(1e3))
     ys = cs(xs)
 
     # Convert to meters
