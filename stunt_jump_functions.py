@@ -116,7 +116,7 @@ def at_rest(t, state, params):
     E, _, _ = total_energy(state, params)
 
     # Tolerance for closeness to zero
-    tol = 1e-3
+    tol = 1e-5
 
     return E - tol
     # return np.max([np.abs(v), np.abs(dvdt)]) - tol
