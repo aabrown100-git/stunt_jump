@@ -690,8 +690,9 @@ def simulate_stunt_jump(params):
     plt.plot(ramp_result["t_track"], E, label='Total Energy', color='blue')
     plt.plot(ramp_result["t_track"], KE, label='Kinetic Energy', color='red')
     plt.plot(ramp_result["t_track"], PE, label='Potential Energy', color='green')
-    plt.axhline(E_tolerance, color='black', linestyle='--', linewidth=1)
-    plt.axvline(ramp_result["t_to_rest"], color='black', linestyle='--', linewidth=1)
+    if ramp_result["at_rest_flag"]: 
+        plt.axhline(E_tolerance, color='black', linestyle='--', linewidth=1)
+        plt.axvline(ramp_result["t_to_rest"], color='black', linestyle='--', linewidth=1)
     plt.xlabel('Time [s]')
     plt.ylabel('Energy [J/kg]')
     plt.title('Energy vs Time')
@@ -700,8 +701,9 @@ def simulate_stunt_jump(params):
     plt.savefig('energy_vs_time.png')
     
     # Zoom in on the plot
-    plt.xlim(0.9*ramp_result["t_to_rest"], 1.1*ramp_result["t_to_rest"])
-    plt.ylim(0, 2*E_tolerance)
+    if ramp_result["at_rest_flag"]:
+        plt.xlim(0.9*ramp_result["t_to_rest"], 1.1*ramp_result["t_to_rest"])
+        plt.ylim(0, 2*E_tolerance)
     plt.savefig('energy_vs_time_zoomed.png')
     plt.close()
 
