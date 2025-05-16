@@ -35,9 +35,11 @@ class StuntJumpGUI(QMainWindow):
         
         # Initial anchor points in feet
         self.anchor_locations = np.array([
-            [1, 2], # feet
-            [2, 1],
-            [3, 2],
+            [1, 2], # feet - start point
+            [1 + 5/12, 1 + 4/12],
+            [2, 1.0],  # peak of parabola
+            [3 - 5/12, 1 + 4/12],
+            [3, 2],  # end point
         ]) * 12
         
         # Create main widget and layout
@@ -124,13 +126,13 @@ class StuntJumpGUI(QMainWindow):
             point_layout.addWidget(QLabel(f"Point {i+1}:"))
             
             # X coordinate input
-            x_input = QLineEdit(str(self.anchor_locations[i][0]/12))
+            x_input = QLineEdit(f"{self.anchor_locations[i][0]/12:.4f}")
             x_input.setFixedWidth(60)
             point_layout.addWidget(QLabel("x:"))
             point_layout.addWidget(x_input)
             
             # Y coordinate input
-            y_input = QLineEdit(str(self.anchor_locations[i][1]/12))
+            y_input = QLineEdit(f"{self.anchor_locations[i][1]/12:.4f}")
             y_input.setFixedWidth(60)
             point_layout.addWidget(QLabel("y:"))
             point_layout.addWidget(y_input)
@@ -343,8 +345,8 @@ class StuntJumpGUI(QMainWindow):
             
             # Update the coordinate input fields
             x_input, y_input = self.control_point_inputs[self.dragged_point]
-            x_input.setText(f"{event.xdata:.2f}")
-            y_input.setText(f"{event.ydata:.2f}")
+            x_input.setText(f"{event.xdata:.4f}")
+            y_input.setText(f"{event.ydata:.4f}")
             
             # Clear only the control points and ramp
             for artist in self.ax.lines:
@@ -387,13 +389,13 @@ class StuntJumpGUI(QMainWindow):
             point_layout.addWidget(QLabel(f"Point {i+1}:"))
             
             # X coordinate input
-            x_input = QLineEdit(str(self.anchor_locations[i][0]/12))
+            x_input = QLineEdit(f"{self.anchor_locations[i][0]/12:.4f}")
             x_input.setFixedWidth(60)
             point_layout.addWidget(QLabel("x:"))
             point_layout.addWidget(x_input)
             
             # Y coordinate input
-            y_input = QLineEdit(str(self.anchor_locations[i][1]/12))
+            y_input = QLineEdit(f"{self.anchor_locations[i][1]/12:.4f}")
             y_input.setFixedWidth(60)
             point_layout.addWidget(QLabel("y:"))
             point_layout.addWidget(y_input)
@@ -513,9 +515,11 @@ class StuntJumpGUI(QMainWindow):
     def reset(self):
         # Reset to initial anchor points
         self.anchor_locations = np.array([
-            [1, 2], # feet
-            [2, 1],
-            [3, 2],
+            [1, 2], # feet - start point
+            [1 + 5/12, 1 + 4/12],
+            [2, 1.0],  # peak of parabola
+            [3 - 5/12, 1 + 4/12],
+            [3, 2],  # end point
         ]) * 12
         
         # Reset friction factor
