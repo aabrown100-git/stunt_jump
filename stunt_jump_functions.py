@@ -482,7 +482,7 @@ def plot_and_animate_car_motion(params, ax=None):
 
     # Create figure and axes if not provided
     if ax is None:
-        fig, ax = plt.subplots(figsize=(8, 5), dpi=200, layout='constrained')
+        fig, ax = plt.subplots(figsize=(9, 5), dpi=200, layout='constrained')
     else:
         fig = ax.figure
 
