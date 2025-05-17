@@ -709,7 +709,7 @@ def simulate_stunt_jump(params):
 
     # Save inverted image if requested
     if save_inverted_image:
-        img = Image.open('stunt_jump.png').convert('RGB')
+        img = Image.open('stunt_jump_Aaron.png').convert('RGB')
         img_inv = ImageOps.invert(img)
         img_inv.save('stunt_jump_inv_Aaron.png')
 
