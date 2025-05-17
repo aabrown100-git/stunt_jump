@@ -482,7 +482,7 @@ def plot_and_animate_car_motion(params, ax=None):
 
     # Create figure and axes if not provided
     if ax is None:
-        fig, ax = plt.subplots(figsize=(10, 5), dpi=200, layout='constrained')
+        fig, ax = plt.subplots(figsize=(8, 5), dpi=200, layout='constrained')
     else:
         fig = ax.figure
 
@@ -537,7 +537,7 @@ def plot_and_animate_car_motion(params, ax=None):
         print(f'The car traveled {(x_landing - x_end) / convert_in_to_m:.2f} inches from the end of the track!')
 
     # Save the plot
-    plt.savefig('stunt_jump.png')
+    plt.savefig('stunt_jump_Aaron.png')
 
     # Optional animation
     if animation_flag:
@@ -711,7 +711,7 @@ def simulate_stunt_jump(params):
     if save_inverted_image:
         img = Image.open('stunt_jump.png').convert('RGB')
         img_inv = ImageOps.invert(img)
-        img_inv.save('stunt_jump_inv.png')
+        img_inv.save('stunt_jump_inv_Aaron.png')
 
     # Return all results
     return {
