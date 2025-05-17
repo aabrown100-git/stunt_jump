@@ -29,9 +29,9 @@ class StuntJumpGUI(QMainWindow):
         self.last_simulation_results = None
         
         # Ring locations in feet
-        self.ring_1 = [5, 1.75]
-        self.ring_2 = [6, 1.6]
-        self.ring_3 = [7, 0.9]
+        self.ring_1 = [4, 1.75]
+        self.ring_2 = [5, 1.6]
+        self.ring_3 = [6, 0.9]
         
         # Initial anchor points in feet
         self.anchor_locations = np.array([

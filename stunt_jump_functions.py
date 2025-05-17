@@ -522,9 +522,9 @@ def plot_and_animate_car_motion(params, ax=None):
     ax.plot(x_full_ft, y_full_ft, color='green', linestyle=':')  # Plot car trajectory
     ax.set_aspect('equal', 'box')  # Set x,y aspect ratio equal
     ax.set_xticks(np.arange(0, 10, 1))
-    ax.set_yticks(np.arange(0, 5, 1))
+    ax.set_yticks(np.arange(0, 3, 1))
     ax.grid(visible=True)
-    ax.set_ylim(0, 5)
+    ax.set_ylim(0, 3)
     ax.set_xlim(0, 10)
     ax.set_xlabel('x [feet]')
     ax.set_ylabel('y [feet]')
